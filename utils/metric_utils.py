@@ -54,18 +54,25 @@ def top_k_acc_last_timestep(y_true_seq, y_pred_seq, k):
 
 
 def mAP_metric_last_timestep(y_true_seq, y_pred_seq, k):
-    """ next poi metrics """
-    # AP: area under PR curve
-    # But in next POI rec, the number of positive sample is always 1. Precision is not well defined.
-    # Take def of mAP from Personalized Long- and Short-term Preference Learning for Next POI Recommendation
+    print("y_true_seq data type:", type(y_true_seq))
+    print("y_true_seq value:", y_true_seq)
+    print("y_pred_seq data type:", type(y_pred_seq))
+    print("y_pred_seq shape:", y_pred_seq.shape)
+    
+    if y_true_seq.shape[0] == 0:
+        return 0.0
+    
     y_true = y_true_seq[-1]
     y_pred = y_pred_seq[-1]
-    rec_list = y_pred.argsort()[-k:][::-1]
-    r_idx = np.where(rec_list == y_true)[0]
-    if len(r_idx) != 0:
-        return 1 / (r_idx[0] + 1)
-    else:
-        return 0
+    
+    top_k_preds = torch.topk(y_pred, k, dim=-1).indices
+    match = (top_k_preds == y_true.unsqueeze(dim=-1)).float()
+    
+    precisions = torch.cumsum(match, dim=-1) / torch.arange(1, k+1, device=match.device).float()
+    avg_precision = torch.sum(precisions * match, dim=-1) / match.sum(dim=-1)
+    avg_precision[torch.isnan(avg_precision)] = 0.0
+    
+    return avg_precision.mean().item()
 
 
 def MRR_metric_last_timestep(y_true_seq, y_pred_seq):
