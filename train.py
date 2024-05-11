@@ -397,10 +397,11 @@ def train(args, dataset):
             if y_poi.size(1) > 0:
                 loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
             else:
-                loss_poi = torch.tensor(0.0, device=args.device)
+                loss_poi = torch.tensor(0.0, device=args.device, requires_grad=True)
                 
-            # Check if y_time is not empty
-            if y_time.numel() > 0:
+
+            # Check if there are any valid time labels in the batch
+            if y_time.size(1) > 0:
                 # Reshape y_pred_time and y_time to have the same shape
                 y_pred_time = y_pred_time.view(-1)
                 y_time = y_time.view(-1)
@@ -408,8 +409,7 @@ def train(args, dataset):
                 # Calculate the time loss
                 loss_time = criterion_time(y_pred_time, y_time)
             else:
-                # If y_time is empty, set loss_time to zero
-                loss_time = torch.tensor(0.0, device=args.device)
+                loss_time = torch.tensor(0.0, device=args.device, requires_grad=True)
             # Print requires_grad and grad_fn after loss computation
             print("After loss computation:")
             print("loss_poi requires_grad:", loss_poi.requires_grad)
