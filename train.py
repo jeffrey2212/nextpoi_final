@@ -419,6 +419,8 @@ def train(args, dataset):
             # Final loss
             loss = loss_poi + loss_time * args.time_loss_weight 
             optimizer.zero_grad()
+            print("Loss requires_grad:", loss.requires_grad)
+            print("Loss grad_fn:", loss.grad_fn)
             loss.backward(retain_graph=True)
             optimizer.step()
 
