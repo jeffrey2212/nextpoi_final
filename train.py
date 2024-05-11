@@ -217,14 +217,14 @@ def train(args, dataset):
                           dropout=args.gcn_dropout)
 
     # Node Attn Model
-    node_attn_model = NodeAttnMap(in_features=X.shape[1], nhid=args.node_attn_nhid, use_mask=False)
-
+    #node_attn_model = NodeAttnMap(in_features=X.shape[1], nhid=args.node_attn_nhid, use_mask=False)
+    node_attn_model = NodeAttnMap(args.poi_embed_dim, nhid=128)
 
     # Model3: Time Model
     time_embed_model = Time2Vec('sin', out_dim=args.time_embed_dim)
 
     #  Model6: Sequence model
-    args.seq_input_embed = args.poi_embed_dim + args.user_embed_dim + args.time_embed_dim 
+    args.seq_input_embed = args.poi_embed_dim +  args.time_embed_dim 
     seq_model = TransformerModel(num_pois,
                                  args.seq_input_embed,
                                  args.transformer_nhead,
@@ -452,7 +452,6 @@ def train(args, dataset):
         # train end --------------------------------------------------------------------------------------------------------
         poi_embed_model.eval()
         node_attn_model.eval()
-        user_embed_model.eval()
         time_embed_model.eval()
         seq_model.eval()
         val_batches_top1_acc_list = []
@@ -660,14 +659,6 @@ def train(args, dataset):
                     poi_embedding_list.append(poi_embedding)
                 save_poi_embeddings = np.array(poi_embedding_list)
                 np.save(os.path.join(embeddings_save_dir, 'saved_poi_embeddings'), save_poi_embeddings)
-                # Save user embeddings
-                user_embedding_list = []
-                for user_idx in range(len(user_id2idx_dict)):
-                    input = torch.LongTensor([user_idx]).to(device=args.device)
-                    user_embedding = user_embed_model(input).detach().cpu().numpy().flatten()
-                    user_embedding_list.append(user_embedding)
-                user_embeddings = np.array(user_embedding_list)
-                np.save(os.path.join(embeddings_save_dir, 'saved_user_embeddings'), user_embeddings)
                 # Save time embeddings
                 time_embedding_list = []
                 for time_idx in range(args.time_units):
