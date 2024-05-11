@@ -300,6 +300,12 @@ def train(args, dataset):
             traj_i_input_tensor = torch.tensor(traj_i_input, dtype=torch.long, device=y_pred_poi.device)
             traj_i_embeddings = poi_embeddings[traj_i_input_tensor]
             traj_length = batch_seq_lens[i]
+
+            print("y_pred_poi shape:", y_pred_poi.shape)
+            print("traj_i_embeddings shape:", traj_i_embeddings.shape)
+            print("traj_length:", traj_length)
+            print("y_pred_poi[i, :traj_length, :] shape:", y_pred_poi[i, :traj_length, :].shape)
+
             y_pred_poi_adjusted[i, :traj_length, :] = traj_i_embeddings[:traj_length, :] + y_pred_poi[i, :traj_length, :]
 
         return y_pred_poi_adjusted
