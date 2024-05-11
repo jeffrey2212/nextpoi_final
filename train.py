@@ -236,7 +236,7 @@ def train(args, dataset):
                                  dropout=args.transformer_dropout)
 
     # Define overall loss and optimizer
-    optimizer = optim.Adam(params=list(poi_embed_model.parameters()) +
+    optimizer = optim.SGD(params=list(poi_embed_model.parameters()) +
                                #   list(node_attn_model.parameters()) +                          
                                   list(time_embed_model.parameters()) +
                                   list(seq_model.parameters()),
