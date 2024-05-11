@@ -90,18 +90,6 @@ class GCN(nn.Module):
 
         return x
 
-class FuseEmbeddings(nn.Module):
-    def __init__(self, user_embed_dim, poi_embed_dim):
-        super(FuseEmbeddings, self).__init__()
-        embed_dim = user_embed_dim + poi_embed_dim
-        self.fuse_embed = nn.Linear(embed_dim, embed_dim)
-        self.leaky_relu = nn.LeakyReLU(0.2)
-
-    def forward(self, user_embed, poi_embed):
-        x = self.fuse_embed(torch.cat((user_embed, poi_embed), 0))
-        x = self.leaky_relu(x)
-        return x
-
 
 def t2v(tau, f, out_features, w, b, w0, b0, arg=None):
     if arg:

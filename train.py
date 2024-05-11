@@ -16,7 +16,7 @@ from tqdm import tqdm
 from utils import increment_path, load_data, load_graph, load_graph_adj_mtx, calculate_laplacian_matrix, maksed_mse_loss
 from utils import top_k_acc_last_timestep, mAP_metric_last_timestep, MRR_metric_last_timestep
 #from dataloader import load_graph_adj_mtx, load_graph_node_features
-from model import GCN, NodeAttnMap, Time2Vec, FuseEmbeddings, TransformerModel
+from model import GCN, NodeAttnMap, Time2Vec, TransformerModel
 from param_parser import parameter_parser
 import networkx as nx
 
@@ -74,7 +74,7 @@ def train(args, dataset):
     # Normalization
     print('Laplician matrix...')
     A = calculate_laplacian_matrix(raw_A, mat_type='hat_rw_normd_lap_mat')
-
+    A = torch.sparse_coo_tensor(np.array(A.nonzero()), A.data, A.shape)
     # POI id to index
     poi_ids = list(G.nodes())
     poi_id2idx_dict = dict(zip(poi_ids, range(len(poi_ids))))
@@ -89,7 +89,8 @@ def train(args, dataset):
         node_features[idx, 0] = G.nodes[poi_id]['latitude']
         node_features[idx, 1] = G.nodes[poi_id]['longitude']
         node_features[idx, 2] = G.nodes[poi_id]['checkin_cnt']
-
+        
+    X = node_features
     # User id to index
     user_ids = [str(each) for each in list(set(train_df['user_id'].to_list()))]
     user_id2idx_dict = dict(zip(user_ids, range(len(user_ids))))
@@ -205,7 +206,7 @@ def train(args, dataset):
     # Model1: POI embedding model
     if isinstance(X, np.ndarray):
         X = torch.from_numpy(X)
-        A = torch.from_numpy(A)
+       # A = torch.from_numpy(A)
     X = X.to(device=args.device, dtype=torch.float)
     A = A.to(device=args.device, dtype=torch.float)
 
@@ -222,9 +223,6 @@ def train(args, dataset):
     # Model3: Time Model
     time_embed_model = Time2Vec('sin', out_dim=args.time_embed_dim)
 
-    # Model5: Embedding fusion models
-    embed_fuse_model1 = FuseEmbeddings(args.user_embed_dim, args.poi_embed_dim)
-
     #  Model6: Sequence model
     args.seq_input_embed = args.poi_embed_dim + args.user_embed_dim + args.time_embed_dim 
     seq_model = TransformerModel(num_pois,
@@ -236,12 +234,8 @@ def train(args, dataset):
 
     # Define overall loss and optimizer
     optimizer = optim.Adam(params=list(poi_embed_model.parameters()) +
-                                  list(node_attn_model.parameters()) +
-                                  list(user_embed_model.parameters()) +
+                                  list(node_attn_model.parameters()) +                          
                                   list(time_embed_model.parameters()) +
-                                  list(cat_embed_model.parameters()) +
-                                  list(embed_fuse_model1.parameters()) +
-                                  list(embed_fuse_model2.parameters()) +
                                   list(seq_model.parameters()),
                            lr=args.lr,
                            weight_decay=args.weight_decay)
@@ -264,8 +258,6 @@ def train(args, dataset):
         user_id = traj_id.split('_')[0]
         user_idx = user_id2idx_dict[user_id]
         input = torch.LongTensor([user_idx]).to(device=args.device)
-        user_embedding = user_embed_model(input)
-        user_embedding = torch.squeeze(user_embedding)
 
         # POI to embedding and fuse embeddings
         input_seq_embed = []
@@ -278,11 +270,8 @@ def train(args, dataset):
                 torch.tensor([input_seq_time[idx]], dtype=torch.float).to(device=args.device))
             time_embedding = torch.squeeze(time_embedding).to(device=args.device)
 
-            # Fuse user+poi embeds
-            fused_embedding1 = embed_fuse_model1(user_embedding, poi_embedding)
-
             # Concat time, cat after user+poi
-            concat_embedding = torch.cat((fused_embedding1,time_embedding), dim=-1)
+            concat_embedding = torch.cat((poi_embeddings,time_embedding), dim=-1)
 
             # Save final embed
             input_seq_embed.append(concat_embedding)
@@ -303,11 +292,7 @@ def train(args, dataset):
     # ====================== Train ======================
     poi_embed_model = poi_embed_model.to(device=args.device)
     node_attn_model = node_attn_model.to(device=args.device)
-    user_embed_model = user_embed_model.to(device=args.device)
     time_embed_model = time_embed_model.to(device=args.device)
-    cat_embed_model = cat_embed_model.to(device=args.device)
-    embed_fuse_model1 = embed_fuse_model1.to(device=args.device)
-    embed_fuse_model2 = embed_fuse_model2.to(device=args.device)
     seq_model = seq_model.to(device=args.device)
 
     #  Loop epoch
@@ -339,11 +324,7 @@ def train(args, dataset):
         logging.info(f"{'*' * 50}Epoch:{epoch:03d}{'*' * 50}\n")
         poi_embed_model.train()
         node_attn_model.train()
-        user_embed_model.train()
         time_embed_model.train()
-        cat_embed_model.train()
-        embed_fuse_model1.train()
-        embed_fuse_model2.train()
         seq_model.train()
 
         train_batches_top1_acc_list = []
@@ -371,6 +352,7 @@ def train(args, dataset):
             batch_seq_labels_cat = []
 
             poi_embeddings = poi_embed_model(X, A)
+            poi_embeddings = node_attn_model(A, poi_embeddings)
 
             # Convert input seq to embeddings
             for sample in batch:
@@ -472,9 +454,6 @@ def train(args, dataset):
         node_attn_model.eval()
         user_embed_model.eval()
         time_embed_model.eval()
-        cat_embed_model.eval()
-        embed_fuse_model1.eval()
-        embed_fuse_model2.eval()
         seq_model.eval()
         val_batches_top1_acc_list = []
         val_batches_top5_acc_list = []
@@ -704,11 +683,7 @@ def train(args, dataset):
                 'epoch': epoch,
                 'poi_embed_state_dict': poi_embed_model.state_dict(),
                 'node_attn_state_dict': node_attn_model.state_dict(),
-                'user_embed_state_dict': user_embed_model.state_dict(),
                 'time_embed_state_dict': time_embed_model.state_dict(),
-                'cat_embed_state_dict': cat_embed_model.state_dict(),
-                'embed_fuse1_state_dict': embed_fuse_model1.state_dict(),
-                'embed_fuse2_state_dict': embed_fuse_model2.state_dict(),
                 'seq_model_state_dict': seq_model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'user_id2idx_dict': user_id2idx_dict,
