@@ -80,7 +80,12 @@ def calculate_laplacian_matrix(adj_mat, mat_type):
 
 
 def maksed_mse_loss(input, target, mask_value=-1):
-    mask = target == mask_value
-    out = (input[~mask] - target[~mask]) ** 2
+    mask = (target != mask_value)
+    if input.dim() == 2 and target.dim() == 2:
+        out = (input[mask] - target[mask]) ** 2
+    elif input.dim() == 1 and target.dim() == 1:
+        out = (input[mask] - target[mask]) ** 2
+    else:
+        raise ValueError("Input and target tensors must have the same number of dimensions (1 or 2)")
     loss = out.mean()
     return loss
