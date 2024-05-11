@@ -211,15 +211,18 @@ def train(args, dataset):
     A = A.to(device=args.device, dtype=torch.float)
 
     args.gcn_nfeat = X.shape[1]
+ #   poi_embed_model = GCN(ninput=args.gcn_nfeat,
+ #                         nhid=args.gcn_nhid,
+ #                         noutput=args.poi_embed_dim,
+ #                         dropout=args.gcn_dropout)
     poi_embed_model = GCN(ninput=args.gcn_nfeat,
-                          nhid=args.gcn_nhid,
-                          noutput=args.poi_embed_dim,
-                          dropout=args.gcn_dropout)
-
+                      nhid=args.gcn_nhid,
+                      noutput=128,
+                      dropout=args.gcn_dropout)
     # Node Attn Model
 
     #node_attn_model = NodeAttnMap(args.poi_embed_dim, args.gcn_nhid[-1])
-    node_attn_model = NodeAttnMap(in_features=args.poi_embed_dim, nhid=args.node_attn_nhid, dropout=0.5)
+    #node_attn_model = NodeAttnMap(in_features=args.poi_embed_dim, nhid=args.node_attn_nhid, dropout=0.5)
     # Model3: Time Model
     time_embed_model = Time2Vec('sin', out_dim=args.time_embed_dim)
 
@@ -234,7 +237,7 @@ def train(args, dataset):
 
     # Define overall loss and optimizer
     optimizer = optim.Adam(params=list(poi_embed_model.parameters()) +
-                                  list(node_attn_model.parameters()) +                          
+                               #   list(node_attn_model.parameters()) +                          
                                   list(time_embed_model.parameters()) +
                                   list(seq_model.parameters()),
                            lr=args.lr,
@@ -280,18 +283,18 @@ def train(args, dataset):
 
     def adjust_pred_prob_by_graph(y_pred_poi):
         y_pred_poi_adjusted = torch.zeros_like(y_pred_poi)
-        attn_map = node_attn_model(X, A)
+        #attn_map = node_attn_model(X, A)
 
         for i in range(len(batch_seq_lens)):
             traj_i_input = batch_input_seqs[i]  # list of input check-in pois
             for j in range(len(traj_i_input)):
-                y_pred_poi_adjusted[i, j, :] = attn_map[traj_i_input[j], :] + y_pred_poi[i, j, :]
+                y_pred_poi_adjusted[i, j, :] = poi_embeddings[traj_i_input[j], :] + y_pred_poi[i, j, :]
 
         return y_pred_poi_adjusted
 
     # ====================== Train ======================
     poi_embed_model = poi_embed_model.to(device=args.device)
-    node_attn_model = node_attn_model.to(device=args.device)
+    #node_attn_model = node_attn_model.to(device=args.device)
     time_embed_model = time_embed_model.to(device=args.device)
     seq_model = seq_model.to(device=args.device)
 
@@ -323,7 +326,7 @@ def train(args, dataset):
     for epoch in range(args.epochs):
         logging.info(f"{'*' * 50}Epoch:{epoch:03d}{'*' * 50}\n")
         poi_embed_model.train()
-        node_attn_model.train()
+        #node_attn_model.train()
         time_embed_model.train()
         seq_model.train()
 
@@ -352,7 +355,7 @@ def train(args, dataset):
             batch_seq_labels_cat = []
 
             poi_embeddings = poi_embed_model(X, A)
-            poi_embeddings = node_attn_model(A, poi_embeddings)
+            #poi_embeddings = node_attn_model(A, poi_embeddings)
 
             # Convert input seq to embeddings
             for sample in batch:
@@ -451,7 +454,7 @@ def train(args, dataset):
 
         # train end --------------------------------------------------------------------------------------------------------
         poi_embed_model.eval()
-        node_attn_model.eval()
+        #node_attn_model.eval()
         time_embed_model.eval()
         seq_model.eval()
         val_batches_top1_acc_list = []
@@ -673,13 +676,13 @@ def train(args, dataset):
             state_dict = {
                 'epoch': epoch,
                 'poi_embed_state_dict': poi_embed_model.state_dict(),
-                'node_attn_state_dict': node_attn_model.state_dict(),
+               # 'node_attn_state_dict': node_attn_model.state_dict(),
                 'time_embed_state_dict': time_embed_model.state_dict(),
                 'seq_model_state_dict': seq_model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'user_id2idx_dict': user_id2idx_dict,
                 'poi_id2idx_dict': poi_id2idx_dict,
-                'node_attn_map': node_attn_model(X, A),
+               # 'node_attn_map': node_attn_model(X, A),
                 'args': args,
                 'epoch_train_metrics': {
                     'epoch_train_loss': epoch_train_loss,
