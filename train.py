@@ -20,7 +20,7 @@ from model import GCN, NodeAttnMap, Time2Vec, FuseEmbeddings, TransformerModel
 from param_parser import parameter_parser
 import networkx as nx
 
-def train(args):
+def train(args, dataset):
     args.save_dir = increment_path(Path(args.project) / args.name, exist_ok=args.exist_ok, sep='-')
     if not os.path.exists(args.save_dir): os.makedirs(args.save_dir)
 
@@ -45,14 +45,14 @@ def train(args):
         yaml.dump(vars(args), f, sort_keys=False)
 
     # Read check-in train data
-    train_df, val_df, test_df = load_data("gowalla.pkl")
+    train_df, val_df, test_df = load_data(dataset+".pkl")
     
     #val_df = pd.read_csv(args.data_val)
 
     # Build POI graph (built from train_df)
     print('Loading POI graph...')
     
-    G = load_graph("gowalla_graph.pkl")
+    G = load_graph(dataset+"_graph.pkl")
     raw_A = nx.adjacency_matrix(G)
     #raw_X = load_graph_node_features(args.data_node_feats,
     #                                 args.feature1,
@@ -771,4 +771,4 @@ if __name__ == '__main__':
     args.feature2 = 'poi_catid'
     args.feature3 = 'latitude'
     args.feature4 = 'longitude'
-    train(args)
+    train(args, 'nyc')

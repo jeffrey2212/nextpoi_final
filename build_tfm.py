@@ -86,19 +86,23 @@ def print_graph_statisics(G):
         print(f"Edge frequency ({i} percentile): {np.percentile(edge_weights, i)}")
 
 
+def build_graph(dataset, dst_dir): 
+    # Load the preprocessed data
+    X_train, _, _ = load_data(dataset)
+    train_df = X_train
+    print('Build global POI checkin graph -----------------------------------')
+    G = build_global_POI_checkin_graph(train_df)
+    print_graph_statisics(G)
+    # Save graph to disk
+    save_graph_to_pickle(G, dst_dir=dst_dir, dataset=dataset)
+    save_graph_edgelist(G, dst_dir=dst_dir, dataset=dataset)
+    print('Graph saved to disk')
+
 if __name__ == '__main__':
     nyc = "nyc.pkl"
     gowalla = "gowalla.pkl"
     dst_dir = "dataset/tfm/"
     
-    # Build POI checkin trajectory graph
-    # Load the preprocessed data
-    X_train, _, _ = load_data(gowalla)
-    train_df = X_train
-    #train_df = pd.read_csv(os.path.join(dst_dir, 'NYC_train.csv'))
-    print('Build global POI checkin graph -----------------------------------')
-    G = build_global_POI_checkin_graph(train_df)
-    print_graph_statisics(G)
-    # Save graph to disk
-    save_graph_to_pickle(G, dst_dir=dst_dir, dataset="gowalla")
-    save_graph_edgelist(G, dst_dir=dst_dir, dataset="gowalla")
+    build_graph(nyc, dst_dir)
+    build_graph(gowalla, dst_dir)
+    
