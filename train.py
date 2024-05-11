@@ -464,7 +464,7 @@ def train(args, dataset):
                              f'pred_seq_poi_wo_attn:{list(np.argmax(batch_pred_pois_wo_attn, axis=2)[sample_idx][:batch_seq_lens[sample_idx]])} \n'
                              f'pred_seq_poi:{list(np.argmax(batch_pred_pois, axis=2)[sample_idx][:batch_seq_lens[sample_idx]])} \n'
                              f'label_seq_time:{list(batch_seq_labels_time[sample_idx].numpy()[:batch_seq_lens[sample_idx]])}\n'
-                             f'pred_seq_time:{list(np.squeeze(batch_pred_times)[sample_idx][:batch_seq_lens[sample_idx]])} \n' +
+                            f'pred_seq_time:{list(batch_pred_times[sample_idx][:batch_seq_lens[sample_idx]])} \n' +
                              '=' * 100)
 
         # train end --------------------------------------------------------------------------------------------------------
