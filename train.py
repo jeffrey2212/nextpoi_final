@@ -363,7 +363,7 @@ def train(args, dataset):
             batch_seq_embeds = []
             batch_seq_labels_poi = []
             batch_seq_labels_time = []
-            batch_seq_labels_cat = []
+
 
             poi_embeddings = poi_embed_model(X, A)
             #poi_embeddings = node_attn_model(A, poi_embeddings)
@@ -387,7 +387,7 @@ def train(args, dataset):
             batch_padded = pad_sequence(batch_seq_embeds, batch_first=True, padding_value=-1)
             label_padded_poi = pad_sequence(batch_seq_labels_poi, batch_first=True, padding_value=-1)
             label_padded_time = pad_sequence(batch_seq_labels_time, batch_first=True, padding_value=-1)
-            label_padded_cat = pad_sequence(batch_seq_labels_cat, batch_first=True, padding_value=-1)
+    
 
             # Feedforward
             x = batch_padded.to(device=args.device, dtype=torch.float)
@@ -489,7 +489,7 @@ def train(args, dataset):
             batch_seq_embeds = []
             batch_seq_labels_poi = []
             batch_seq_labels_time = []
-            batch_seq_labels_cat = []
+     
 
             poi_embeddings = poi_embed_model(X, A)
 
@@ -511,7 +511,7 @@ def train(args, dataset):
             batch_padded = pad_sequence(batch_seq_embeds, batch_first=True, padding_value=-1)
             label_padded_poi = pad_sequence(batch_seq_labels_poi, batch_first=True, padding_value=-1)
             label_padded_time = pad_sequence(batch_seq_labels_time, batch_first=True, padding_value=-1)
-            label_padded_cat = pad_sequence(batch_seq_labels_cat, batch_first=True, padding_value=-1)
+       
 
             # Feedforward
             x = batch_padded.to(device=args.device, dtype=torch.float)
