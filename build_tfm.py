@@ -46,6 +46,7 @@ def build_global_POI_checkin_graph(df, exclude_user=None):
                 G.add_edge(prev_poi_id, curr_poi_id, weight=1)
 
     return G
+
 def save_graph_to_pickle(G, dst_dir, dataset):
     pickle.dump(G, open(os.path.join(dst_dir, dataset+'_graph.pkl'), 'wb'))
     
@@ -95,7 +96,7 @@ def build_graph(dataset, dst_dir):
     print_graph_statisics(G)
     # Save graph to disk
     save_graph_to_pickle(G, dst_dir=dst_dir, dataset=dataset)
-    save_graph_edgelist(G, dst_dir=dst_dir, dataset=dataset)
+    #save_graph_edgelist(G, dst_dir=dst_dir, dataset=dataset)
     print('Graph saved to disk')
 
     

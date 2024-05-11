@@ -17,6 +17,8 @@ class NodeAttnMap(nn.Module):
         self.leakyrelu = nn.LeakyReLU(0.2)
 
     def forward(self, X, A):
+        print("the shape of X is: ")
+        print(X.shape)
         Wh = torch.mm(X, self.W)
 
         e = self._prepare_attentional_mechanism_input(Wh)
