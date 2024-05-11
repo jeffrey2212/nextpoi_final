@@ -292,14 +292,13 @@ def train(args, dataset):
         print(f"Input Sequence Embeddings: {input_seq_embed}")
         return input_seq_embed
 
-    def adjust_pred_prob_by_graph(y_pred_poi):
+    def adjust_pred_prob_by_graph(y_pred_poi, batch_input_seqs, poi_embeddings, batch_seq_lens):
         y_pred_poi_adjusted = torch.zeros_like(y_pred_poi)
-        #attn_map = node_attn_model(X, A)
 
         for i in range(len(batch_seq_lens)):
             traj_i_input = batch_input_seqs[i]  # list of input check-in pois
             for j in range(len(traj_i_input)):
-                y_pred_poi_adjusted[i, j, :] = poi_embeddings[traj_i_input[j], :] + y_pred_poi[i, j, :]
+                y_pred_poi_adjusted[i, j, :] += poi_embeddings[traj_i_input[j], :] + y_pred_poi[i, j, :]
 
         return y_pred_poi_adjusted
 
@@ -543,7 +542,7 @@ def train(args, dataset):
             y_pred_poi, y_pred_time = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
-            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi)
+            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi, batch_input_seqs, poi_embeddings, batch_seq_lens)
             # Calculate loss
             loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
             loss_time = criterion_time(torch.squeeze(y_pred_time), y_time)
