@@ -35,10 +35,7 @@ def MRR_metric(y_true_seq, y_pred_seq):
 
 
 def top_k_acc_last_timestep(y_true_seq, y_pred_seq, k):
-    print("y_true_seq data type:", type(y_true_seq))
-    print("y_true_seq value:", y_true_seq)
-    print("y_pred_seq data type:", type(y_pred_seq))
-    print("y_pred_seq shape:", y_pred_seq.shape)
+
     
     if y_true_seq.shape[0] == 0:
         return 0.0
@@ -54,10 +51,6 @@ def top_k_acc_last_timestep(y_true_seq, y_pred_seq, k):
 
 
 def mAP_metric_last_timestep(y_true_seq, y_pred_seq, k):
-    print("y_true_seq data type:", type(y_true_seq))
-    print("y_true_seq value:", y_true_seq)
-    print("y_pred_seq data type:", type(y_pred_seq))
-    print("y_pred_seq shape:", y_pred_seq.shape)
     
     if y_true_seq.shape[0] == 0:
         return 0.0
@@ -76,11 +69,7 @@ def mAP_metric_last_timestep(y_true_seq, y_pred_seq, k):
 
 
 def MRR_metric_last_timestep(y_true_seq, y_pred_seq):
-    print("y_true_seq data type:", type(y_true_seq))
-    print("y_true_seq value:", y_true_seq)
-    print("y_pred_seq data type:", type(y_pred_seq))
-    print("y_pred_seq shape:", y_pred_seq.shape)
-    
+
     if y_true_seq.shape[0] == 0:
         return 0.0
     
