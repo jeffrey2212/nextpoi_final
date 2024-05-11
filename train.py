@@ -398,7 +398,7 @@ def train(args, dataset):
             print("y_pred_poi requires_grad before adjust_pred_prob_by_graph:", y_pred_poi.requires_grad)
             print("y_pred_poi grad_fn before adjust_pred_prob_by_graph:", y_pred_poi.grad_fn)
             
-            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi)
+            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi, batch_input_seqs, poi_embeddings, batch_seq_lens)
             
             print("y_pred_poi_adjusted requires_grad after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.requires_grad)
             print("y_pred_poi_adjusted grad_fn after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.grad_fn)
