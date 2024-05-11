@@ -291,24 +291,21 @@ def train(args, dataset):
 
         print(f"Input Sequence Embeddings: {input_seq_embed}")
         return input_seq_embed
-
+    
     def adjust_pred_prob_by_graph(y_pred_poi, batch_input_seqs, poi_embeddings, batch_seq_lens):
         y_pred_poi_adjusted = torch.zeros_like(y_pred_poi)
 
         for i in range(len(batch_seq_lens)):
-            traj_i_input = batch_input_seqs[i]  # list of input check-in pois
-            traj_i_input_tensor = torch.tensor(traj_i_input, dtype=torch.long, device=y_pred_poi.device)
-            traj_i_embeddings = poi_embeddings[traj_i_input_tensor]
             traj_length = batch_seq_lens[i]
-
-            print("y_pred_poi shape:", y_pred_poi.shape)
-            print("traj_i_embeddings shape:", traj_i_embeddings.shape)
-            print("traj_length:", traj_length)
-            print("y_pred_poi[i, :traj_length, :] shape:", y_pred_poi[i, :traj_length, :].shape)
-
-            y_pred_poi_adjusted[i, :traj_length, :] = traj_i_embeddings[:traj_length, :] + y_pred_poi[i, :traj_length, :]
+            
+            if traj_length > 0:
+                traj_i_input = batch_input_seqs[i]  # list of input check-in pois
+                traj_i_input_tensor = torch.tensor(traj_i_input, dtype=torch.long, device=y_pred_poi.device)
+                traj_i_embeddings = poi_embeddings[traj_i_input_tensor]
+                y_pred_poi_adjusted[i, :traj_length, :] = traj_i_embeddings[:traj_length, :] + y_pred_poi[i, :traj_length, :]
 
         return y_pred_poi_adjusted
+
 
     # ====================== Train ======================
     poi_embed_model = poi_embed_model.to(device=args.device)
