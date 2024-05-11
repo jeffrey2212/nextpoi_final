@@ -393,7 +393,7 @@ def train(args, dataset):
             x = batch_padded.to(device=args.device, dtype=torch.float)
             y_poi = label_padded_poi.to(device=args.device, dtype=torch.long)
             y_time = label_padded_time.to(device=args.device, dtype=torch.float)
-            y_pred_poi, y_pred_time, y_pred_cat = seq_model(x, src_mask)
+            y_pred_poi, y_pred_time = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
             y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi)
@@ -417,7 +417,6 @@ def train(args, dataset):
             batch_label_pois = y_poi.detach().cpu().numpy()
             batch_pred_pois = y_pred_poi_adjusted.detach().cpu().numpy()
             batch_pred_times = y_pred_time.detach().cpu().numpy()
-            batch_pred_cats = y_pred_cat.detach().cpu().numpy()
             for label_pois, pred_pois, seq_len in zip(batch_label_pois, batch_pred_pois, batch_seq_lens):
                 label_pois = label_pois[:seq_len]  # shape: (seq_len, )
                 pred_pois = pred_pois[:seq_len, :]  # shape: (seq_len, num_poi)
@@ -517,7 +516,7 @@ def train(args, dataset):
             y_poi = label_padded_poi.to(device=args.device, dtype=torch.long)
             y_time = label_padded_time.to(device=args.device, dtype=torch.float)
   
-            y_pred_poi, y_pred_time, y_pred_cat = seq_model(x, src_mask)
+            y_pred_poi, y_pred_time = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
             y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi)
@@ -537,7 +536,7 @@ def train(args, dataset):
             batch_label_pois = y_poi.detach().cpu().numpy()
             batch_pred_pois = y_pred_poi_adjusted.detach().cpu().numpy()
             batch_pred_times = y_pred_time.detach().cpu().numpy()
-            batch_pred_cats = y_pred_cat.detach().cpu().numpy()
+            
             for label_pois, pred_pois, seq_len in zip(batch_label_pois, batch_pred_pois, batch_seq_lens):
                 label_pois = label_pois[:seq_len]  # shape: (seq_len, )
                 pred_pois = pred_pois[:seq_len, :]  # shape: (seq_len, num_poi)
@@ -578,7 +577,6 @@ def train(args, dataset):
                              f'label_seq:{batch[sample_idx][2]}\n'
                              f'pred_seq_poi_wo_attn:{list(np.argmax(batch_pred_pois_wo_attn, axis=2)[sample_idx][:batch_seq_lens[sample_idx]])} \n'
                              f'pred_seq_poi:{list(np.argmax(batch_pred_pois, axis=2)[sample_idx][:batch_seq_lens[sample_idx]])} \n'
-                             f'pred_seq_cat:{list(np.argmax(batch_pred_cats, axis=2)[sample_idx][:batch_seq_lens[sample_idx]])} \n'
                              f'label_seq_time:{list(batch_seq_labels_time[sample_idx].numpy()[:batch_seq_lens[sample_idx]])}\n'
                              f'pred_seq_time:{list(np.squeeze(batch_pred_times)[sample_idx][:batch_seq_lens[sample_idx]])} \n' +
                              '=' * 100)
