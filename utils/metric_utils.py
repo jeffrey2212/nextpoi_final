@@ -40,7 +40,7 @@ def top_k_acc_last_timestep(y_true_seq, y_pred_seq, k):
     print("y_pred_seq data type:", type(y_pred_seq))
     print("y_pred_seq shape:", y_pred_seq.shape)
     
-    if y_true_seq.size(0) == 0:
+    if y_true_seq.shape[0] == 0:
         return 0.0
     
     y_true = y_true_seq[-1]
