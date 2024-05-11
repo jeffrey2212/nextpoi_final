@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import pickle
+import sys
 
 base_folder = "../dataset/"
 output_folder = "dataset/"
@@ -118,5 +119,16 @@ def process_nyc_dataset():
 
 
 if __name__ == "__main__":
-     process_gowalla_dataset()
-     process_nyc_dataset()
+    if len(sys.argv) != 2:
+        print("Usage: python data_prep.py <dataset>")
+        sys.exit(1)
+    
+    dataset = sys.argv[1]
+    
+    if dataset == "gowalla":
+        process_gowalla_dataset()
+    elif dataset == "nyc":
+        process_nyc_dataset()
+    else:
+        print("Invalid dataset. Please choose 'gowalla' or 'nyc'.")
+        sys.exit(1)

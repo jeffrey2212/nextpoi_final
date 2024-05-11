@@ -1,6 +1,6 @@
 """ Build the user-agnostic global trajectory flow map from the sequence data """
 """ Modify from GETNext  https://github.com/songyangme/GETNext"""
-
+import sys
 import os
 import pickle
 
@@ -98,6 +98,7 @@ def build_graph(dataset, dst_dir):
     save_graph_edgelist(G, dst_dir=dst_dir, dataset=dataset)
     print('Graph saved to disk')
 
+
 if __name__ == '__main__':
     nyc = "nyc.pkl"
     gowalla = "gowalla.pkl"
@@ -106,3 +107,20 @@ if __name__ == '__main__':
     build_graph(nyc, dst_dir)
     build_graph(gowalla, dst_dir)
     
+if __name__ == "__main__":
+    nyc = "nyc.pkl"
+    gowalla = "gowalla.pkl"
+    dst_dir = "dataset/tfm/"
+    if len(sys.argv) != 2:
+        print("Usage: python data_prep.py <dataset>")
+        sys.exit(1)
+    
+    dataset = sys.argv[1]
+    
+    if dataset == "gowalla":
+       build_graph(gowalla, dst_dir)
+    elif dataset == "nyc":
+        build_graph(nyc, dst_dir)
+    else:
+        print("Invalid dataset. Please choose 'gowalla' or 'nyc'.")
+        sys.exit(1)
