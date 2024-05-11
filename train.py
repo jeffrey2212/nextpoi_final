@@ -393,7 +393,6 @@ def train(args, dataset):
             x = batch_padded.to(device=args.device, dtype=torch.float)
             y_poi = label_padded_poi.to(device=args.device, dtype=torch.long)
             y_time = label_padded_time.to(device=args.device, dtype=torch.float)
-            y_cat = label_padded_cat.to(device=args.device, dtype=torch.long)
             y_pred_poi, y_pred_time, y_pred_cat = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
@@ -517,7 +516,7 @@ def train(args, dataset):
             x = batch_padded.to(device=args.device, dtype=torch.float)
             y_poi = label_padded_poi.to(device=args.device, dtype=torch.long)
             y_time = label_padded_time.to(device=args.device, dtype=torch.float)
-            y_cat = label_padded_cat.to(device=args.device, dtype=torch.long)
+  
             y_pred_poi, y_pred_time, y_pred_cat = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
