@@ -1,0 +1,12 @@
+torch
+numpy
+prettytable
+matplotlib
+scipy
+torch_summary
+tqdm
+pandas
+data
+PyYAML
+scikit_learn
+torchsummary
