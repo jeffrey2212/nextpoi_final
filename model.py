@@ -6,30 +6,22 @@ from torch.nn import Parameter
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 class NodeAttnMap(nn.Module):
-    def __init__(self, in_features, nhid, use_mask=False):
+    def __init__(self, in_features, nhid, dropout=0.5):
         super(NodeAttnMap, self).__init__()
-        self.use_mask = use_mask
-        self.out_features = nhid
         self.W = nn.Parameter(torch.empty(size=(in_features, nhid)))
         nn.init.xavier_uniform_(self.W.data, gain=1.414)
-        self.a = nn.Parameter(torch.empty(size=(2 * nhid, 1)))
-        nn.init.xavier_uniform_(self.a.data, gain=1.414)
-        self.leakyrelu = nn.LeakyReLU(0.2)
-
+        self.dropout = dropout
+        
     def forward(self, X, A):
-        print("the shape of X is: ")
-        print(X.shape)
         Wh = torch.mm(X, self.W)
-
-        e = self._prepare_attentional_mechanism_input(Wh)
-
-        if self.use_mask:
-            e = torch.where(A > 0, e, torch.zeros_like(e))  # mask
-
-        A = A + 1  # shift from 0-1 to 1-2
-        e = e * A
-
-        return e
+        e = torch.mm(Wh, self.W.T)
+        e = e.mul(A)
+        zero_vec = -9e15*torch.ones_like(e)
+        attention = torch.where(A > 0, e, zero_vec)
+        attention = F.softmax(attention, dim=1)
+        attention = F.dropout(attention, self.dropout, training=self.training)
+        h_prime = torch.matmul(attention, Wh)
+        return h_prime
 
     def _prepare_attentional_mechanism_input(self, Wh):
         Wh1 = torch.matmul(Wh, self.a[:self.out_features, :])
