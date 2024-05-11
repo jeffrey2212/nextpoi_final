@@ -8,19 +8,20 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer
 class NodeAttnMap(nn.Module):
     def __init__(self, in_features, nhid, dropout=0.5):
         super(NodeAttnMap, self).__init__()
+        self.in_features = in_features
+        self.nhid = nhid
         self.W = nn.Parameter(torch.empty(size=(in_features, nhid)))
         nn.init.xavier_uniform_(self.W.data, gain=1.414)
         self.dropout = dropout
         
-    def forward(self, X, A):
+    def forward(self, A, X):
         Wh = torch.mm(X, self.W)
-        e = torch.mm(Wh, self.W.T)
-        e = e.mul(A)
+        e = torch.sparse.mm(A, Wh)
         zero_vec = -9e15*torch.ones_like(e)
         attention = torch.where(A > 0, e, zero_vec)
         attention = F.softmax(attention, dim=1)
         attention = F.dropout(attention, self.dropout, training=self.training)
-        h_prime = torch.matmul(attention, Wh)
+        h_prime = torch.sparse.mm(attention, Wh)
         return h_prime
 
     def _prepare_attentional_mechanism_input(self, Wh):
