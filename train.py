@@ -545,7 +545,11 @@ def train(args, dataset):
             loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
             loss_time = criterion_time(torch.squeeze(y_pred_time), y_time)
             loss = loss_poi + loss_time * args.time_loss_weight
+            print("loss_poi requires_grad:", loss_poi.requires_grad)
+            print("loss_poi grad_fn:", loss_poi.grad_fn)
 
+            print("loss_time requires_grad:", loss_time.requires_grad)
+            print("loss_time grad_fn:", loss_time.grad_fn)
             # Performance measurement
             top1_acc = 0
             top5_acc = 0
