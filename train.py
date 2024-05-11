@@ -421,10 +421,7 @@ def train(args, dataset):
             batch_label_pois = y_poi.detach().cpu().numpy()
             batch_pred_pois = y_pred_poi_adjusted.detach().cpu().numpy()
             batch_pred_times = y_pred_time.detach().cpu().numpy()
-            print("label_pois data type:", type(label_pois))
-            print("label_pois shape:", label_pois.shape)
-            print("pred_pois data type:", type(pred_pois))
-            print("pred_pois shape:", pred_pois.shape)
+
             
             for label_pois, pred_pois, seq_len in zip(batch_label_pois, batch_pred_pois, batch_seq_lens):
                 label_pois = label_pois[:seq_len]  # shape: (seq_len, )
