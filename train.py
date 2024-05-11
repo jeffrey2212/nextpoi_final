@@ -255,7 +255,10 @@ def train(args, dataset):
         traj_id = sample[0]
         input_seq = [each[0] for each in sample[1]]
         input_seq_time = [each[1] for each in sample[1]]
-
+        
+        if len(input_seq) == 0:
+        # Return a default embedding or placeholder value
+            return [torch.zeros(args.poi_embed_dim + args.time_embed_dim)]
         print(f"Sample: {sample}")
         print(f"Trajectory ID: {traj_id}")
         print(f"Input Sequence: {input_seq}")
