@@ -38,7 +38,7 @@ def parameter_parser():
                         help='Validation data path')
     parser.add_argument('--short-traj-thres',
                         type=int,
-                        default=2,
+                        default=0,
                         help='Remove over-short trajectory')
     parser.add_argument('--time-units',
                         type=int,
@@ -132,7 +132,7 @@ def parameter_parser():
                         help='whether save the embeddings')
     parser.add_argument('--workers',
                         type=int,
-                        default=0,
+                        default=8,
                         help='Num of workers for dataloader.')
     parser.add_argument('--project',
                         default='runs/train',

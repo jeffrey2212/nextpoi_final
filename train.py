@@ -47,6 +47,11 @@ def train(args, dataset):
     # Read check-in train data
     train_df, val_df, test_df = load_data(dataset+".pkl")
     
+    
+    # Get unique user IDs from train_df and val_df
+    train_user_ids = train_df['user_id'].unique()
+    val_user_ids = val_df['user_id'].unique()
+
     #val_df = pd.read_csv(args.data_val)
 
     # Build POI graph (built from train_df)
@@ -88,7 +93,7 @@ def train(args, dataset):
     # User id to index
     user_ids = [str(each) for each in list(set(train_df['user_id'].to_list()))]
     user_id2idx_dict = dict(zip(user_ids, range(len(user_ids))))
-
+    
     # Print user-trajectories count
     traj_list = list(set(train_df['trajectory_id'].tolist()))
 
@@ -99,18 +104,22 @@ def train(args, dataset):
             self.input_seqs = []
             self.label_seqs = []
 
-            for traj_id in tqdm(set(train_df['trajectory_id'].tolist())):
-                traj_df = train_df[train_df['trajectory_id'] == traj_id]
-                poi_ids = traj_df['poi_id'].to_list()
-                poi_idxs = [poi_id2idx_dict[each] for each in poi_ids]
-                time_feature = traj_df[args.time_feature].to_list()
+            # Group the DataFrame by trajectory ID
+            grouped_df = train_df.groupby('trajectory_id')
 
-                input_seq = []
-                label_seq = []
-                for i in range(len(poi_idxs) - 1):
-                    input_seq.append((poi_idxs[i], time_feature[i]))
-                    label_seq.append((poi_idxs[i + 1], time_feature[i + 1]))
+            # Iterate over the grouped trajectories
+            for traj_id, traj_df in tqdm(grouped_df):
+                poi_ids = traj_df['poi_id'].tolist()
+                time_features = traj_df[args.time_feature].tolist()
 
+                # Map POI IDs to their indices
+                poi_indices = [poi_id2idx_dict[poi_id] for poi_id in poi_ids]
+
+                # Construct input and label sequences
+                input_seq = list(zip(poi_indices[:-1], time_features[:-1]))
+                label_seq = list(zip(poi_indices[1:], time_features[1:]))
+
+                # Ignore sequence if too short
                 if len(input_seq) < args.short_traj_thres:
                     continue
 
@@ -132,41 +141,38 @@ def train(args, dataset):
             self.input_seqs = []
             self.label_seqs = []
 
-            for traj_id in tqdm(set(df['trajectory_id'].tolist())):
-                user_id = traj_id.split('_')[0]
+            # Get unique trajectory IDs
+            unique_traj_ids = df['trajectory_id'].unique()
 
-                # Ignore user if not in training set
-                if user_id not in user_id2idx_dict.keys():
-                    continue
-
-                # Get POIs idx in this trajectory
+            # Iterate over unique trajectory IDs
+            for traj_id in tqdm(unique_traj_ids):
+                # Get the trajectory DataFrame
                 traj_df = df[df['trajectory_id'] == traj_id]
-                poi_ids = traj_df['poi_id'].to_list()
-                poi_idxs = []
-                time_feature = traj_df[args.time_feature].to_list()
 
-                for each in poi_ids:
-                    if each in poi_id2idx_dict.keys():
-                        poi_idxs.append(poi_id2idx_dict[each])
-                    else:
-                        # Ignore poi if not in training set
-                        continue
+                # Get POI IDs and time features as NumPy arrays
+                poi_ids = traj_df['poi_id'].values
+                time_features = traj_df[args.time_feature].values
 
-                # Construct input seq and label seq
-                input_seq = []
-                label_seq = []
-                for i in range(len(poi_idxs) - 1):
-                    input_seq.append((poi_idxs[i], time_feature[i]))
-                    label_seq.append((poi_idxs[i + 1], time_feature[i + 1]))
+                # Map POI IDs to their indices using vectorized operations
+                poi_indices = np.array([poi_id2idx_dict.get(poi_id, -1) for poi_id in poi_ids])
 
-                # Ignore seq if too short
+                # Filter out invalid POI indices
+                valid_mask = (poi_indices != -1)
+                poi_indices = poi_indices[valid_mask]
+                time_features = time_features[valid_mask]
+
+                # Construct input and label sequences using vectorized operations
+                input_seq = np.column_stack((poi_indices[:-1], time_features[:-1]))
+                label_seq = np.column_stack((poi_indices[1:], time_features[1:]))
+
+                # Ignore sequence if too short
                 if len(input_seq) < args.short_traj_thres:
                     continue
 
                 self.input_seqs.append(input_seq)
                 self.label_seqs.append(label_seq)
                 self.traj_seqs.append(traj_id)
-
+            
         def __len__(self):
             assert len(self.input_seqs) == len(self.label_seqs) == len(self.traj_seqs)
             return len(self.traj_seqs)
@@ -175,8 +181,15 @@ def train(args, dataset):
             return (self.traj_seqs[index], self.input_seqs[index], self.label_seqs[index])
 
     print('Prepare dataloader...')
+    print("Length of train_df:", len(train_df))
+    print("Length of val_df:", len(val_df))
     train_dataset = TrajectoryDatasetTrain(train_df)
     val_dataset = TrajectoryDatasetVal(val_df)
+    print("Length of val_dataset:", len(val_dataset))
+    
+ 
+    print("Length of train_dataset:", len(train_dataset))
+
 
     train_loader = DataLoader(train_dataset,
                               batch_size=args.batch,

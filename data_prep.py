@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 import pickle
 import sys
 
@@ -51,16 +51,27 @@ def process_gowalla_dataset():
         "user_id")["norm_in_day_time"].diff()
 
     # Fill NaN values with 0 for norm_day_shift and norm_relative_time
-    data["norm_day_shift"].fillna(0, inplace=True)
-    data["norm_relative_time"].fillna(0, inplace=True)
+    data["norm_day_shift"] = data["norm_day_shift"].fillna(0)
+    data["norm_relative_time"] = data["norm_relative_time"].fillna(0)
 
     # Split the data into features (X) and target variable (y)
     X = data[["user_id", "poi_id", "latitude", "longitude", "trajectory_id",
               "day_of_week", "norm_in_day_time", "norm_day_shift", "norm_relative_time"]]
 
-    # Split the data into training and testing sets
-    X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
-    X_train, X_val = train_test_split(X_train, test_size=0.2, random_state=42)
+    y = data["user_id"]  # Use user_id as the target variable for stratification
+
+    # Create an instance of StratifiedShuffleSplit
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+
+    # Perform the stratified split
+    for train_val_index, test_index in sss.split(X, y):
+        X_train_val, X_test = X.iloc[train_val_index], X.iloc[test_index]
+        y_train_val, y_test = y.iloc[train_val_index], y.iloc[test_index]
+
+    # Further split the training-validation set into training and validation sets
+    sss_train_val = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+    for train_index, val_index in sss_train_val.split(X_train_val, y_train_val):
+        X_train, X_val = X_train_val.iloc[train_index], X_train_val.iloc[val_index]
 
     # Save the preprocessed data to a pickle file
     print("Gowalla: Saving preprocessed data to pickle file")
@@ -114,16 +125,27 @@ def process_nyc_dataset():
         "user_id")["norm_in_day_time"].diff()
 
     # Fill NaN values with 0 for norm_day_shift and norm_relative_time
-    data["norm_day_shift"].fillna(0, inplace=True)
-    data["norm_relative_time"].fillna(0, inplace=True)
+    data["norm_day_shift"] = data["norm_day_shift"].fillna(0)
+    data["norm_relative_time"] = data["norm_relative_time"].fillna(0)
 
     # Split the data into features (X) and target variable (y)
     X = data[["user_id", "poi_id", "latitude", "longitude", "trajectory_id",
               "day_of_week", "norm_in_day_time", "norm_day_shift", "norm_relative_time"]]
 
-    # Split the data into training and testing sets
-    X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
-    X_train, X_val = train_test_split(X_train, test_size=0.2, random_state=42)
+    y = data["user_id"]  # Use user_id as the target variable for stratification
+
+    # Create an instance of StratifiedShuffleSplit
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+
+    # Perform the stratified split
+    for train_val_index, test_index in sss.split(X, y):
+        X_train_val, X_test = X.iloc[train_val_index], X.iloc[test_index]
+        y_train_val, y_test = y.iloc[train_val_index], y.iloc[test_index]
+
+    # Further split the training-validation set into training and validation sets
+    sss_train_val = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+    for train_index, val_index in sss_train_val.split(X_train_val, y_train_val):
+        X_train, X_val = X_train_val.iloc[train_index], X_train_val.iloc[val_index]
 
     # Save the preprocessed data to a pickle file
     print("NYC: Saving preprocessed data to pickle file")
