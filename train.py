@@ -419,6 +419,14 @@ def train(args, dataset):
             # Final loss
             loss = loss_poi + loss_time * args.time_loss_weight 
             optimizer.zero_grad()
+            for name, param in poi_embed_model.named_parameters():
+                print(name, param.requires_grad)
+
+            for name, param in time_embed_model.named_parameters():
+                print(name, param.requires_grad)
+
+            for name, param in seq_model.named_parameters():
+                print(name, param.requires_grad)
             print("y_pred_poi_adjusted requires_grad:", y_pred_poi_adjusted.requires_grad)
             print("y_pred_poi_adjusted grad_fn:", y_pred_poi_adjusted.grad_fn)
 
