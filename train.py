@@ -217,9 +217,9 @@ def train(args, dataset):
                           dropout=args.gcn_dropout)
 
     # Node Attn Model
-    #node_attn_model = NodeAttnMap(in_features=X.shape[1], nhid=args.node_attn_nhid, use_mask=False)
-    node_attn_model = NodeAttnMap(args.poi_embed_dim, args.gcn_nhid[-1])
 
+    #node_attn_model = NodeAttnMap(args.poi_embed_dim, args.gcn_nhid[-1])
+    node_attn_model = NodeAttnMap(in_features=X.shape[1], nhid=args.node_attn_nhid, use_mask=False)
     # Model3: Time Model
     time_embed_model = Time2Vec('sin', out_dim=args.time_embed_dim)
 
