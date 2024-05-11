@@ -251,7 +251,7 @@ def train(args, dataset):
 
     #  Tool functions for training
     def input_traj_to_embeddings(sample, poi_embeddings):
-        # Parse sample
+    # Parse sample
         traj_id = sample[0]
         input_seq = [each[0] for each in sample[1]]
         input_seq_time = [each[1] for each in sample[1]]
@@ -260,6 +260,9 @@ def train(args, dataset):
         user_id = traj_id.split('_')[0]
         user_idx = user_id2idx_dict[user_id]
         input = torch.LongTensor([user_idx]).to(device=args.device)
+
+        if len(input_seq) == 0:
+            return []  # Return an empty list for empty input sequences
 
         # POI to embedding and fuse embeddings
         input_seq_embed = []
@@ -273,7 +276,7 @@ def train(args, dataset):
             time_embedding = torch.squeeze(time_embedding).to(device=args.device)
 
             # Concat time, cat after user+poi
-            concat_embedding = torch.cat((poi_embeddings, time_embedding), dim=-1)
+            concat_embedding = torch.cat((poi_embedding, time_embedding), dim=-1)
 
             # Save final embed
             input_seq_embed.append(concat_embedding)
