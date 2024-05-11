@@ -35,10 +35,11 @@ def MRR_metric(y_true_seq, y_pred_seq):
 
 
 def top_k_acc_last_timestep(y_true_seq, y_pred_seq, k):
-    print("y_true data type:", type(y_true))
-    print("y_true value:", y_true)
-    print("y_pred data type:", type(y_pred))
-    print("y_pred shape:", y_pred.shape)
+    print("y_true_seq data type:", type(y_true_seq))
+    print("y_true_seq value:", y_true_seq)
+    print("y_pred_seq data type:", type(y_pred_seq))
+    print("y_pred_seq shape:", y_pred_seq.shape)
+    
     if y_true_seq.size(0) == 0:
         return 0.0
     
