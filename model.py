@@ -18,7 +18,7 @@ class NodeAttnMap(nn.Module):
         Wh = torch.mm(X, self.W)
         e = torch.sparse.mm(A, Wh)
         zero_vec = -9e15*torch.ones_like(e)
-        attention = torch.where(A > 0, e, zero_vec)
+        attention = torch.where(A.to_dense() > 0, e, zero_vec)
         attention = F.softmax(attention, dim=1)
         attention = F.dropout(attention, self.dropout, training=self.training)
         h_prime = torch.sparse.mm(attention, Wh)
