@@ -251,36 +251,42 @@ def train(args, dataset):
 
     #  Tool functions for training
     def input_traj_to_embeddings(sample, poi_embeddings):
-    # Parse sample
+        # Parse sample
         traj_id = sample[0]
         input_seq = [each[0] for each in sample[1]]
         input_seq_time = [each[1] for each in sample[1]]
+
+        print(f"Sample: {sample}")
+        print(f"Trajectory ID: {traj_id}")
+        print(f"Input Sequence: {input_seq}")
+        print(f"Input Sequence Time: {input_seq_time}")
 
         # User to embedding
         user_id = traj_id.split('_')[0]
         user_idx = user_id2idx_dict[user_id]
         input = torch.LongTensor([user_idx]).to(device=args.device)
 
-        if len(input_seq) == 0:
-            return []  # Return an empty list for empty input sequences
-
         # POI to embedding and fuse embeddings
         input_seq_embed = []
         for idx in range(len(input_seq)):
             poi_embedding = poi_embeddings[input_seq[idx]]
             poi_embedding = torch.squeeze(poi_embedding).to(device=args.device)
+            print(f"POI Embedding: {poi_embedding}")
 
             # Time to vector
             time_embedding = time_embed_model(
                 torch.tensor([input_seq_time[idx]], dtype=torch.float).to(device=args.device))
             time_embedding = torch.squeeze(time_embedding).to(device=args.device)
+            print(f"Time Embedding: {time_embedding}")
 
             # Concat time, cat after user+poi
             concat_embedding = torch.cat((poi_embedding, time_embedding), dim=-1)
+            print(f"Concatenated Embedding: {concat_embedding}")
 
             # Save final embed
             input_seq_embed.append(concat_embedding)
 
+        print(f"Input Sequence Embeddings: {input_seq_embed}")
         return input_seq_embed
 
     def adjust_pred_prob_by_graph(y_pred_poi):
