@@ -1,5 +1,5 @@
 import numpy as np
-
+import torch
 def top_k_acc(y_true_seq, y_pred_seq, k):
     hit = 0
     # Convert to binary relevance (nonzero is relevant).
@@ -35,15 +35,17 @@ def MRR_metric(y_true_seq, y_pred_seq):
 
 
 def top_k_acc_last_timestep(y_true_seq, y_pred_seq, k):
-    """ next poi metrics """
+    if y_true_seq.size(0) == 0:
+        return 0.0
+    
     y_true = y_true_seq[-1]
     y_pred = y_pred_seq[-1]
-    top_k_rec = y_pred.argsort()[-k:][::-1]
-    idx = np.where(top_k_rec == y_true)[0]
-    if len(idx) != 0:
-        return 1
-    else:
-        return 0
+    
+    top_k_preds = torch.topk(y_pred, k, dim=-1).indices
+    match = (top_k_preds == y_true.unsqueeze(dim=-1)).any(dim=-1)
+    acc = match.sum().item() / match.size(0)
+    
+    return acc
 
 
 def mAP_metric_last_timestep(y_true_seq, y_pred_seq, k):

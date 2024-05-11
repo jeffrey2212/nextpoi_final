@@ -387,12 +387,6 @@ def train(args, dataset):
 
             # Graph Attention adjusted prob
             y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi, A)
-            # Print requires_grad and grad_fn before loss computation
-            print("Before loss computation:")
-            print("y_pred_poi_adjusted requires_grad:", y_pred_poi_adjusted.requires_grad)
-            print("y_pred_poi_adjusted grad_fn:", y_pred_poi_adjusted.grad_fn)
-            print("y_pred_time requires_grad:", y_pred_time.requires_grad)
-            print("y_pred_time grad_fn:", y_pred_time.grad_fn)
             # Check if there are any valid POI labels in the batch
             if y_poi.size(1) > 0:
                 loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
@@ -410,31 +404,7 @@ def train(args, dataset):
                 loss_time = criterion_time(y_pred_time, y_time)
             else:
                 loss_time = torch.tensor(0.0, device=args.device, requires_grad=True)
-            # Print requires_grad and grad_fn after loss computation
-            print("After loss computation:")
-            print("loss_poi requires_grad:", loss_poi.requires_grad)
-            print("loss_poi grad_fn:", loss_poi.grad_fn)
-            print("loss_time requires_grad:", loss_time.requires_grad)
-            print("loss_time grad_fn:", loss_time.grad_fn)
             
-            
-            print("y_poi shape:", y_poi.shape)
-            print("y_poi dtype:", y_poi.dtype)
-            print("y_poi sample values:", y_poi[:5])
-
-            print("y_time shape:", y_time.shape)
-            print("y_time dtype:", y_time.dtype)
-            print("y_time sample values:", y_time[:5])
-
-            print("y_pred_poi_adjusted shape:", y_pred_poi_adjusted.shape)
-            print("y_pred_poi_adjusted dtype:", y_pred_poi_adjusted.dtype)
-            print("y_pred_poi_adjusted sample values:", y_pred_poi_adjusted[:5])
-
-            print("y_pred_time shape:", y_pred_time.shape)
-            print("y_pred_time dtype:", y_pred_time.dtype)
-            print("y_pred_time sample values:", y_pred_time[:5])
-            print("loss_poi value:", loss_poi)
-            print("loss_time value:", loss_time)
             # Final loss
             loss = loss_poi + loss_time * args.time_loss_weight 
             optimizer.zero_grad()
