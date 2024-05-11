@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import pickle
 import zipfile
 from pathlib import Path
@@ -15,7 +16,6 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from utils import increment_path, load_data, load_graph, load_graph_adj_mtx, calculate_laplacian_matrix, maksed_mse_loss
 from utils import top_k_acc_last_timestep, mAP_metric_last_timestep, MRR_metric_last_timestep
-#from dataloader import load_graph_adj_mtx, load_graph_node_features
 from model import GCN, NodeAttnMap, Time2Vec, TransformerModel
 from param_parser import parameter_parser
 import networkx as nx
@@ -59,17 +59,7 @@ def train(args, dataset):
     
     G = load_graph(dataset+"_graph.pkl")
     raw_A = nx.adjacency_matrix(G)
-    #raw_X = load_graph_node_features(args.data_node_feats,
-    #                                 args.feature1,
-    #                                 args.feature2,
-    #                                 args.feature3,
-    #                                 args.feature4)
-    #logging.info(
-    #    f"raw_X.shape: {raw_X.shape}; "
-    #    f"Four features: {args.feature1}, {args.feature2}, {args.feature3}, {args.feature4}.")
-    #logging.info(f"raw_A.shape: {raw_A.shape}; Edge from row_index to col_index with weight (frequency).")
     num_pois = len(G.nodes)
-    #num_pois = 1000
     
     # Normalization
     print('Laplician matrix...')
@@ -762,9 +752,18 @@ def train(args, dataset):
 
 if __name__ == '__main__':
     args = parameter_parser()
-    # The name of node features in NYC/graph_X.csv
-    args.feature1 = 'checkin_cnt'
-    args.feature2 = 'poi_catid'
-    args.feature3 = 'latitude'
-    args.feature4 = 'longitude'
-    train(args, 'nyc')
+   
+
+    if len(sys.argv) != 2:
+        print("Usage: python data_prep.py <dataset>")
+        sys.exit(1)
+
+    dataset = sys.argv[1]
+
+    if dataset == "gowalla":
+         train(args, 'gowalla')
+    elif dataset == "nyc":
+         train(args, 'nyc')
+    else:
+        print("Invalid dataset. Please choose 'gowalla' or 'nyc'.")
+        sys.exit(1)

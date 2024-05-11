@@ -10,7 +10,7 @@ else:
 
 
 def parameter_parser():
-    parser = argparse.ArgumentParser(description="Run GETNext.")
+    parser = argparse.ArgumentParser(description="Next POI")
     parser.add_argument('--seed',
                         type=int,
                         default=42,
@@ -20,22 +20,6 @@ def parameter_parser():
                         default=device,
                         help='')
     # Data
-    parser.add_argument('--data-adj-mtx',
-                        type=str,
-                        default='dataset/NYC/graph_A.csv',
-                        help='Graph adjacent path')
-    parser.add_argument('--data-node-feats',
-                        type=str,
-                        default='dataset/NYC/graph_X.csv',
-                        help='Graph node features path')
-    parser.add_argument('--data-train',
-                        type=str,
-                        default='dataset/NYC/NYC_train.csv',
-                        help='Training data path')
-    parser.add_argument('--data-val',
-                        type=str,
-                        default='dataset/NYC/NYC_val.csv',
-                        help='Validation data path')
     parser.add_argument('--short-traj-thres',
                         type=int,
                         default=0,
