@@ -297,8 +297,9 @@ def train(args, dataset):
 
         for i in range(len(batch_seq_lens)):
             traj_i_input = batch_input_seqs[i]  # list of input check-in pois
-            for j in range(len(traj_i_input)):
-                y_pred_poi_adjusted[i, j, :] += poi_embeddings[traj_i_input[j], :] + y_pred_poi[i, j, :]
+            traj_i_input_tensor = torch.tensor(traj_i_input, dtype=torch.long, device=y_pred_poi.device)
+            traj_i_embeddings = poi_embeddings[traj_i_input_tensor]
+            y_pred_poi_adjusted[i, :len(traj_i_input), :] = traj_i_embeddings + y_pred_poi[i, :len(traj_i_input), :]
 
         return y_pred_poi_adjusted
 
