@@ -419,22 +419,6 @@ def train(args, dataset):
             # Final loss
             loss = loss_poi + loss_time * args.time_loss_weight 
             optimizer.zero_grad()
-            for name, param in poi_embed_model.named_parameters():
-                print(name, param.requires_grad)
-
-            for name, param in time_embed_model.named_parameters():
-                print(name, param.requires_grad)
-
-            for name, param in seq_model.named_parameters():
-                print(name, param.requires_grad)
-            print("y_pred_poi_adjusted requires_grad:", y_pred_poi_adjusted.requires_grad)
-            print("y_pred_poi_adjusted grad_fn:", y_pred_poi_adjusted.grad_fn)
-
-            print("loss_poi requires_grad:", loss_poi.requires_grad)
-            print("loss_poi grad_fn:", loss_poi.grad_fn)
-
-            print("loss_time requires_grad:", loss_time.requires_grad)
-            print("loss_time grad_fn:", loss_time.grad_fn)
             loss.backward(retain_graph=True)
             optimizer.step()
 
@@ -550,8 +534,13 @@ def train(args, dataset):
             y_pred_poi, y_pred_time = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
+            print("y_pred_poi requires_grad before adjust_pred_prob_by_graph:", y_pred_poi.requires_grad)
+            print("y_pred_poi grad_fn before adjust_pred_prob_by_graph:", y_pred_poi.grad_fn)
+            
             y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi)
 
+            print("y_pred_poi_adjusted requires_grad after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.requires_grad)
+            print("y_pred_poi_adjusted grad_fn after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.grad_fn)
             # Calculate loss
             loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
             loss_time = criterion_time(torch.squeeze(y_pred_time), y_time)
