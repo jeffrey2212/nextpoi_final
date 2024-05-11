@@ -292,18 +292,8 @@ def train(args, dataset):
         print(f"Input Sequence Embeddings: {input_seq_embed}")
         return input_seq_embed
     
-    def adjust_pred_prob_by_graph(y_pred_poi, batch_input_seqs, poi_embeddings, batch_seq_lens):
-        y_pred_poi_adjusted = torch.zeros_like(y_pred_poi)
-
-        for i in range(len(batch_seq_lens)):
-            traj_length = batch_seq_lens[i]
-            
-            if traj_length > 0:
-                traj_i_input = batch_input_seqs[i]  # list of input check-in pois
-                traj_i_input_tensor = torch.tensor(traj_i_input, dtype=torch.long, device=y_pred_poi.device)
-                traj_i_embeddings = poi_embeddings[traj_i_input_tensor]
-                y_pred_poi_adjusted[i, :traj_length, :] = traj_i_embeddings[:traj_length, :] + y_pred_poi[i, :traj_length, :]
-
+    def adjust_pred_prob_by_graph(y_pred_poi, adjacency_matrix):
+        y_pred_poi_adjusted = torch.matmul(y_pred_poi, adjacency_matrix)
         return y_pred_poi_adjusted
 
 
@@ -403,7 +393,7 @@ def train(args, dataset):
             print("y_pred_poi requires_grad before adjust_pred_prob_by_graph:", y_pred_poi.requires_grad)
             print("y_pred_poi grad_fn before adjust_pred_prob_by_graph:", y_pred_poi.grad_fn)
             
-            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi, batch_input_seqs, poi_embeddings, batch_seq_lens)
+            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi, A)
             
             print("y_pred_poi_adjusted requires_grad after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.requires_grad)
             print("y_pred_poi_adjusted grad_fn after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.grad_fn)
@@ -547,7 +537,7 @@ def train(args, dataset):
             y_pred_poi, y_pred_time = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
-            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi, batch_input_seqs, poi_embeddings, batch_seq_lens)
+            y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi,  A)
             # Calculate loss
             loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
             loss_time = criterion_time(torch.squeeze(y_pred_time), y_time)
