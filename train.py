@@ -386,22 +386,19 @@ def train(args, dataset):
             y_pred_poi, y_pred_time = seq_model(x, src_mask)
 
             # Graph Attention adjusted prob
-            print("y_pred_poi requires_grad before adjust_pred_prob_by_graph:", y_pred_poi.requires_grad)
-            print("y_pred_poi grad_fn before adjust_pred_prob_by_graph:", y_pred_poi.grad_fn)
-            
             y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi, A)
-            
-            print("y_pred_poi_adjusted requires_grad after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.requires_grad)
-            print("y_pred_poi_adjusted grad_fn after adjust_pred_prob_by_graph:", y_pred_poi_adjusted.grad_fn)
+            # Print requires_grad and grad_fn before loss computation
+            print("Before loss computation:")
+            print("y_pred_poi_adjusted requires_grad:", y_pred_poi_adjusted.requires_grad)
+            print("y_pred_poi_adjusted grad_fn:", y_pred_poi_adjusted.grad_fn)
+            print("y_pred_time requires_grad:", y_pred_time.requires_grad)
+            print("y_pred_time grad_fn:", y_pred_time.grad_fn)
             # Check if there are any valid POI labels in the batch
             if y_poi.size(1) > 0:
                 loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
             else:
                 loss_poi = torch.tensor(0.0, device=args.device)
                 
-            
-            print("loss_poi requires_grad:", loss_poi.requires_grad)
-            print("loss_poi grad_fn:", loss_poi.grad_fn)
             # Check if y_time is not empty
             if y_time.numel() > 0:
                 # Reshape y_pred_time and y_time to have the same shape
@@ -413,6 +410,10 @@ def train(args, dataset):
             else:
                 # If y_time is empty, set loss_time to zero
                 loss_time = torch.tensor(0.0, device=args.device)
+            # Print requires_grad and grad_fn after loss computation
+            print("After loss computation:")
+            print("loss_poi requires_grad:", loss_poi.requires_grad)
+            print("loss_poi grad_fn:", loss_poi.grad_fn)
             print("loss_time requires_grad:", loss_time.requires_grad)
             print("loss_time grad_fn:", loss_time.grad_fn)
             # Final loss
