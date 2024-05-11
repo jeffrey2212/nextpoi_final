@@ -402,13 +402,19 @@ def train(args, dataset):
                 loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
             else:
                 loss_poi = torch.tensor(0.0, device=args.device)
-            # Reshape y_pred_time and y_time to have the same shape
-            y_pred_time = y_pred_time.view(-1)
-            y_time = y_time.view(-1)
-            print("Shape of y_pred_time:", y_pred_time.shape)
-            print("Shape of y_time:", y_time.shape)
-            # Calculate the time loss
-            loss_time = criterion_time(y_pred_time, y_time)
+                
+            
+            # Check if y_time is not empty
+            if y_time.numel() > 0:
+                # Reshape y_pred_time and y_time to have the same shape
+                y_pred_time = y_pred_time.view(-1)
+                y_time = y_time.view(-1)
+
+                # Calculate the time loss
+                loss_time = criterion_time(y_pred_time, y_time)
+            else:
+                # If y_time is empty, set loss_time to zero
+                loss_time = torch.tensor(0.0, device=args.device)
 
             # Final loss
             loss = loss_poi + loss_time * args.time_loss_weight 
