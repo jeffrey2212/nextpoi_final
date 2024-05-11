@@ -256,7 +256,6 @@ def train(args, dataset):
         input_seq = [each[0] for each in sample[1]]
         input_seq_time = [each[1] for each in sample[1]]
 
-
         # User to embedding
         user_id = traj_id.split('_')[0]
         user_idx = user_id2idx_dict[user_id]
@@ -274,7 +273,7 @@ def train(args, dataset):
             time_embedding = torch.squeeze(time_embedding).to(device=args.device)
 
             # Concat time, cat after user+poi
-            concat_embedding = torch.cat((poi_embeddings,time_embedding), dim=-1)
+            concat_embedding = torch.cat((poi_embeddings, time_embedding), dim=-1)
 
             # Save final embed
             input_seq_embed.append(concat_embedding)
