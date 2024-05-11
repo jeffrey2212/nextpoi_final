@@ -397,8 +397,11 @@ def train(args, dataset):
 
             # Graph Attention adjusted prob
             y_pred_poi_adjusted = adjust_pred_prob_by_graph(y_pred_poi)
-
-            loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
+            # Check if there are any valid POI labels in the batch
+            if y_poi.size(1) > 0:
+                loss_poi = criterion_poi(y_pred_poi_adjusted.transpose(1, 2), y_poi)
+            else:
+                loss_poi = torch.tensor(0.0, device=args.device)
             loss_time = criterion_time(torch.squeeze(y_pred_time), y_time)
 
             # Final loss
