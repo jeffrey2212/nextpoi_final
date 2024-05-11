@@ -76,10 +76,18 @@ def mAP_metric_last_timestep(y_true_seq, y_pred_seq, k):
 
 
 def MRR_metric_last_timestep(y_true_seq, y_pred_seq):
-    """ next poi metrics """
-    # Mean Reciprocal Rank: Reciprocal of the rank of the first relevant item
+    print("y_true_seq data type:", type(y_true_seq))
+    print("y_true_seq value:", y_true_seq)
+    print("y_pred_seq data type:", type(y_pred_seq))
+    print("y_pred_seq shape:", y_pred_seq.shape)
+    
+    if y_true_seq.shape[0] == 0:
+        return 0.0
+    
     y_true = y_true_seq[-1]
     y_pred = y_pred_seq[-1]
-    rec_list = y_pred.argsort()[-len(y_pred):][::-1]
-    r_idx = np.where(rec_list == y_true)[0][0]
-    return 1 / (r_idx + 1)
+    
+    rank = torch.nonzero(torch.argsort(y_pred, descending=True) == y_true).squeeze().item() + 1
+    mrr = 1.0 / rank
+    
+    return mrr
