@@ -88,7 +88,7 @@ def print_graph_statisics(G):
 
 def build_graph(dataset, dst_dir): 
     # Load the preprocessed data
-    X_train, _, _ = load_data(dataset)
+    X_train, _, _ = load_data(dataset+'.pkl')
     train_df = X_train
     print('Build global POI checkin graph -----------------------------------')
     G = build_global_POI_checkin_graph(train_df)
@@ -98,19 +98,12 @@ def build_graph(dataset, dst_dir):
     save_graph_edgelist(G, dst_dir=dst_dir, dataset=dataset)
     print('Graph saved to disk')
 
-
-if __name__ == '__main__':
-    nyc = "nyc.pkl"
-    gowalla = "gowalla.pkl"
-    dst_dir = "dataset/tfm/"
-    
-    build_graph(nyc, dst_dir)
-    build_graph(gowalla, dst_dir)
     
 if __name__ == "__main__":
-    nyc = "nyc.pkl"
-    gowalla = "gowalla.pkl"
+    nyc = "nyc"
+    gowalla = "gowalla"
     dst_dir = "dataset/tfm/"
+    
     if len(sys.argv) != 2:
         print("Usage: python data_prep.py <dataset>")
         sys.exit(1)

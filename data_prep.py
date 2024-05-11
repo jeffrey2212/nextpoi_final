@@ -126,7 +126,7 @@ def process_nyc_dataset():
     X_train, X_val = train_test_split(X_train, test_size=0.2, random_state=42)
 
     # Save the preprocessed data to a pickle file
-    print("Gowalla: Saving preprocessed data to pickle file")
+    print("NYC: Saving preprocessed data to pickle file")
     with open(output_folder+"nyc.pkl", "wb") as file:
         pickle.dump((X_train, X_val, X_test), file)
 
