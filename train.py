@@ -416,6 +416,25 @@ def train(args, dataset):
             print("loss_poi grad_fn:", loss_poi.grad_fn)
             print("loss_time requires_grad:", loss_time.requires_grad)
             print("loss_time grad_fn:", loss_time.grad_fn)
+            
+            
+            print("y_poi shape:", y_poi.shape)
+            print("y_poi dtype:", y_poi.dtype)
+            print("y_poi sample values:", y_poi[:5])
+
+            print("y_time shape:", y_time.shape)
+            print("y_time dtype:", y_time.dtype)
+            print("y_time sample values:", y_time[:5])
+
+            print("y_pred_poi_adjusted shape:", y_pred_poi_adjusted.shape)
+            print("y_pred_poi_adjusted dtype:", y_pred_poi_adjusted.dtype)
+            print("y_pred_poi_adjusted sample values:", y_pred_poi_adjusted[:5])
+
+            print("y_pred_time shape:", y_pred_time.shape)
+            print("y_pred_time dtype:", y_pred_time.dtype)
+            print("y_pred_time sample values:", y_pred_time[:5])
+            print("loss_poi value:", loss_poi)
+            print("loss_time value:", loss_time)
             # Final loss
             loss = loss_poi + loss_time * args.time_loss_weight 
             optimizer.zero_grad()
